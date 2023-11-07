@@ -67,11 +67,10 @@ if __name__ == "__main__":
     cont, hier = cv2.findContours(dst, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     minRect = [None]*len(cont)
-    minEllipse = [None]*len(cont)
 
     # gets minimum area rectangle for each contour
-    for i, c in enumerate(cont):
-        minRect[i] = cv2.minAreaRect(c)
+    # for i, c in enumerate(cont):
+    #     minRect[i] = cv2.minAreaRect(c)
     
     # image for debugging
     # all_contours = 255*np.ones((img.shape[0], img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR
@@ -89,8 +88,8 @@ if __name__ == "__main__":
             # print(match_score)
 
             # draws the bounding box
-            box = cv2.boxPoints(minRect[c])
-            box = np.intp(box) #np.intp: Integer used for indexing (same as C ssize_t; normally either int32 or int64)
+            # box = cv2.boxPoints(minRect[c])
+            # box = np.intp(box) #np.intp: Integer used for indexing (same as C ssize_t; normally either int32 or int64)
             if(match_score >0.2 ):
                 print(match_score)
                 # cv2.drawContours(all_contours, [box], 0, bad, thickness=5)
