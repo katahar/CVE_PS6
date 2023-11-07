@@ -26,8 +26,31 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     # Read image
+    ref_img = cv2.imread(args.ref)
     img = cv2.imread(args.input)
 
+
+    # reference image processing
+    # Convert to gray-scale
+    ref_gray = cv2.cvtColor(ref_img, cv2.COLOR_BGR2GRAY)
+    # Binary
+    ref_thr,ref_dst = cv2.threshold(ref_gray, 60, 255, cv2.THRESH_BINARY)
+    
+    # clean up
+    for i in range(1):
+        ref_dst = cv2.erode(ref_dst, None)
+    for i in range(1):
+        ref_dst = cv2.dilate(ref_dst, None)
+
+    # find contours with hierachy
+    ref_conts, ref_hiers = cv2.findContours(ref_dst, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # ref_contour = ref_conts[1]
+    
+    ref_contour_img = 255*np.ones((ref_img.shape[0], ref_img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR)
+    cv2.drawContours(ref_contour_img, ref_conts, 1,(rand.randint(0, 255), rand.randint(0, 255), rand.randint(0, 255)), thickness=3)
+    cv2.drawContours(ref_contour_img, ref_conts, 1,(rand.randint(0, 255), rand.randint(0, 255), rand.randint(0, 255)), thickness=3)
+
+    # input image processing
     # Convert to gray-scale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # Binary
@@ -42,3 +65,29 @@ if __name__ == "__main__":
 
     # find contours with hierachy
     cont, hier = cv2.findContours(dst, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    all_contours = 255*np.ones((img.shape[0], img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR)
+    for c in range(len(cont)):
+        if(c!=0):
+            cv2.drawContours(all_contours, cont, c,(rand.randint(0, 255), rand.randint(0, 255), rand.randint(0, 255)), thickness=10)
+
+
+
+
+
+
+    cv2.namedWindow("Reference contour",cv2.WINDOW_NORMAL)
+    cv2.imshow("Reference contour", ref_contour_img)
+
+    cv2.namedWindow("Reference binary",cv2.WINDOW_NORMAL)
+    cv2.imshow("Reference binary", ref_dst)
+
+    cv2.namedWindow("Original Image",cv2.WINDOW_NORMAL)
+    cv2.imshow("Original Image", img)
+
+    cv2.namedWindow("All contours",cv2.WINDOW_NORMAL)
+    cv2.imshow("All contours", all_contours)
+
+
+    cv2.waitKey()
+
