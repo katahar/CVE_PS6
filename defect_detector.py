@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     # find contours with hierachy
     ref_conts, ref_hiers = cv2.findContours(ref_dst, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # ref_contour = ref_conts[1]
+    ref_contour = ref_conts[1]
     
     ref_contour_img = 255*np.ones((ref_img.shape[0], ref_img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR)
     cv2.drawContours(ref_contour_img, ref_conts, 1,(rand.randint(0, 255), rand.randint(0, 255), rand.randint(0, 255)), thickness=3)
@@ -66,27 +66,51 @@ if __name__ == "__main__":
     # find contours with hierachy
     cont, hier = cv2.findContours(dst, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    all_contours = 255*np.ones((img.shape[0], img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR)
+    minRect = [None]*len(cont)
+    minEllipse = [None]*len(cont)
+
+    # gets minimum area rectangle for each contour
+    for i, c in enumerate(cont):
+        minRect[i] = cv2.minAreaRect(c)
+    
+    # image for debugging
+    # all_contours = 255*np.ones((img.shape[0], img.shape[1],3), dtype=np.uint8) #cv2.cvtColor(blobs,cv2.COLOR_GRAY2BGR
     for c in range(len(cont)):
-        if(c!=0):
-            cv2.drawContours(all_contours, cont, c,(rand.randint(0, 255), rand.randint(0, 255), rand.randint(0, 255)), thickness=10)
+        
+        # creates minumum size and ignores the first background contour
+        if(c!=0 and cv2.contourArea(cont[c])>10):
+            # draws all  contour
+            # cv2.drawContours(all_contours, cont, c,(0,0,0), thickness=10)
 
+            good = (255,0,0)
+            bad = (0,0,255)
 
+            match_score = cv2.matchShapes(ref_contour, cont[c], cv2.CONTOURS_MATCH_I3,0)
+            # print(match_score)
 
+            # draws the bounding box
+            box = cv2.boxPoints(minRect[c])
+            box = np.intp(box) #np.intp: Integer used for indexing (same as C ssize_t; normally either int32 or int64)
+            if(match_score >0.2 ):
+                print(match_score)
+                # cv2.drawContours(all_contours, [box], 0, bad, thickness=5)
+                cv2.drawContours(img, cont, c, bad, thickness=cv2.FILLED)
+            # else:
+                # cv2.drawContours(all_contours, [box], 0, good, thickness=5)
 
+    # cv2.namedWindow("Reference contour",cv2.WINDOW_NORMAL)
+    # cv2.imshow("Reference contour", ref_contour_img)
 
-
-    cv2.namedWindow("Reference contour",cv2.WINDOW_NORMAL)
-    cv2.imshow("Reference contour", ref_contour_img)
-
-    cv2.namedWindow("Reference binary",cv2.WINDOW_NORMAL)
-    cv2.imshow("Reference binary", ref_dst)
+    # cv2.namedWindow("Reference binary",cv2.WINDOW_NORMAL)
+    # cv2.imshow("Reference binary", ref_dst)
 
     cv2.namedWindow("Original Image",cv2.WINDOW_NORMAL)
     cv2.imshow("Original Image", img)
 
-    cv2.namedWindow("All contours",cv2.WINDOW_NORMAL)
-    cv2.imshow("All contours", all_contours)
+    # cv2.namedWindow("All contours",cv2.WINDOW_NORMAL)
+    # cv2.imshow("All contours", all_contours)
+
+    cv2.imwrite("spade-terminal-output.png", img)
 
 
     cv2.waitKey()
